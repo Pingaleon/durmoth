@@ -1,0 +1,11 @@
+Material My Material : MatDefs/LightingFog.j3md {
+     MaterialParameters {
+        Specular : 1.0 1.0 1.0 1.0
+        fogColor : 0.1 0.1 0.1 1.0
+        Diffuse : 0 0 0 0
+        DiffuseMap : Textures/water/water.png
+     }
+    AdditionalRenderState {
+      Blend Alpha
+    }
+}

@@ -1,0 +1,9 @@
+Material My Material : MatDefs/LightingFog.j3md {
+     MaterialParameters {
+        fogColor : 0.1 0.1 0.1 1.0
+        DiffuseMap : Textures/plants/lilypad.png
+     }
+    AdditionalRenderState {
+        Blend Alpha
+    }
+}

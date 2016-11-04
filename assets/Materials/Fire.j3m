@@ -1,0 +1,12 @@
+Material My Material : MatDefs/ParticleFog.j3md {
+     MaterialParameters {
+        Texture : Textures/particles/flame.png
+        fogColor : 0.1 0.1 0.1 1.0
+     }
+    AdditionalRenderState {
+      Blend Alpha
+      DepthTest On
+      DepthWrite Off
+      Wireframe Off
+    }
+}

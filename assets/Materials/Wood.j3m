@@ -1,0 +1,10 @@
+Material My Material : MatDefs/LightingFog.j3md {
+     MaterialParameters {
+        DiffuseMap : Textures/trees/holz.png
+        fogColor : 0.1 0.1 0.1 1.0
+        NormalMap : Textures/trees/holznormalmap.png
+        Specular : 0 0 0 0
+     }
+    AdditionalRenderState {
+    }
+}

@@ -1,0 +1,13 @@
+Material My Material : MatDefs/TerrainLightingFog.j3md {
+     MaterialParameters {
+        DiffuseMap_1 : Flip Repeat Textures/splat/soil3.png
+        DiffuseMap_2 : Flip Repeat Textures/splat/soil2.png
+        DiffuseMap : Flip Repeat Textures/splat/soil1.png
+        DiffuseMap_0_scale : 16.0
+        DiffuseMap_1_scale : 16.0
+        DiffuseMap_2_scale : 40.0
+        fogColor : 0.1 0.1 0.1 1.0
+     }
+    AdditionalRenderState {
+    }
+}

@@ -1,0 +1,10 @@
+Material My Material : MatDefs/LightingFog.j3md {
+     MaterialParameters {
+        DiffuseMap : Flip Textures/trees/tree3.png
+        fogColor : 0.1 0.1 0.1 1.0
+        alphaThreshold : 1.4
+     }
+    AdditionalRenderState {
+      Blend Alpha
+    }
+}
