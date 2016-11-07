@@ -92,8 +92,6 @@ public class Test extends SimpleApplication {
         cfg.setTitle("Swamp");
         app.setSettings(cfg);
         app.start();
-    
-    
     }
 
     @Override
@@ -317,7 +315,6 @@ public class Test extends SimpleApplication {
     public void simpleUpdate(float tpf) {
        spot.setPosition(cam.getLocation());               // shine from camera loc
         spot.setDirection(cam.getDirection()); 
-        cam.setLocation(cam.getLocation().add(new Vector3f(2,0,0)));
     }
 
     @Override

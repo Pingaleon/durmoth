@@ -51,11 +51,15 @@ public class Terrain {
     private BufferedImage heightMap;
     private BufferedImage alphaMap;
     private TerrainAssets assetManager;
+    private TerrainQuad terrainObject;
     private Node terrain;
     private List<VegetationObject> vegList = new ArrayList<VegetationObject>();
     private List<RawVegetationObject> rawVegList = new ArrayList<RawVegetationObject>();
+    private List<RawVegetationObject> done = new ArrayList<RawVegetationObject>();
     private float xScale = 1.0f;
     private float yScale = 1.0f;
+    
+
         
     public Terrain(int tile_size, int xOffset, int  yOffset, int s, TerrainAssets assetMan){
         size = tile_size;
@@ -92,6 +96,10 @@ public class Terrain {
     
     public BufferedImage getHeightMap(){
         return heightMap;
+    }
+    
+    public void setAssetManager(TerrainAssets ass){
+        assetManager = ass;
     }
     
     public void setAlphaMap(BufferedImage aMap){
@@ -144,7 +152,7 @@ public class Terrain {
         vegList = vegL;
     }
     
-    public Node getTerrainQuad(){
+    public void terrainNodeSetup(){
         Image height = new AWTLoader().load(heightMap, true);
         Image alpha = new AWTLoader().load(alphaMap, true);
         Texture2D alpha_map = new Texture2D(alpha);
@@ -154,16 +162,27 @@ public class Terrain {
         AbstractHeightMap heightmap = null;
         heightmap = new ImageBasedHeightMap(height);
         heightmap.load();
-        Node terrain = new Node();
+        terrain = new Node();
         Node terrainP = new Node();
         Node terrainG = new Node();
-        TerrainQuad terrainObject;
         terrainObject = new TerrainQuad("Terrain_"+xOff+"_"+yOff, (size/4)+1 ,size+1, heightmap.getHeightMap());
         terrainObject.scale(xScale, 0.3f, yScale);
         terrainObject.setLocalTranslation(xOff*size*xScale+size*xScale/2, 0f, yOff*size*yScale+size*yScale/2);
         terrainObject.setMaterial(terr_mat);
         //TODO Verbessern
         terrainP.attachChild(terrainObject);
+        terrain.setName("Terrain_"+xOff+"_"+yOff);
+        terrainP.setName("terrainP");
+        terrainG.setName("terrainG");
+        terrain.attachChild(terrainG);
+        terrain.attachChild(terrainP);
+        /*System.out.println(terrain);
+        System.out.println(terrain.getChildren());
+        for(Spatial s : terrain.getChildren()) System.out.println(((Node) s).getChildren());*/
+    }
+    
+    public boolean createVegetationStep(long maxDelay){
+        long startTime = System.nanoTime();
         for(RawVegetationObject o : rawVegList){
             if(o.getType()==VegetationObjectType.GRASS){
                 Spatial grass = assetManager.getModel("grass");
@@ -177,7 +196,7 @@ public class Terrain {
                 grass.rotate(0f, o.getRotation(), 0f);
                 grass.setLocalTranslation(pos);
                 if(y>33f&&y<36f){
-                terrainG.attachChild(grass);
+               ((Node) terrain.getChild("terrainG") ).attachChild(grass);
                 vegList.add(new VegetationObject(o.getType(),pos, o.getRotation()));
                 }
             }
@@ -194,7 +213,7 @@ public class Terrain {
                 grass.rotate(0f, o.getRotation(), 0f);
                 grass.setLocalTranslation(pos);
                 if(y>33f){
-                    terrainP.attachChild(grass);
+                    ((Node) terrain.getChild("terrainG") ).attachChild(grass);
                     vegList.add(new VegetationObject(o.getType(),pos, o.getRotation()));
                 }
             }
@@ -213,7 +232,7 @@ public class Terrain {
                 grass.rotate(0f, o.getRotation(), 0f);
                 grass.setLocalTranslation(pos);
                 if(y>33f){
-                    terrainP.attachChild(grass);
+                    ((Node) terrain.getChild("terrainG") ).attachChild(grass);
                     vegList.add(new VegetationObject(o.getType(),pos, o.getRotation()));
                 }
             }
@@ -230,7 +249,7 @@ public class Terrain {
                 grass.rotate(0f, o.getRotation(), 0f);
                 grass.setLocalTranslation(pos);
                 if(sy<=34.81f){
-                terrainG.attachChild(grass);
+                ((Node) terrain.getChild("terrainG") ).attachChild(grass);
                 vegList.add(new VegetationObject(o.getType(),pos, o.getRotation()));
                 }
             }
@@ -256,7 +275,7 @@ public class Terrain {
                 fireEffect.setLocalTranslation(pos);
                 fireEffect.setQueueBucket(Bucket.Translucent);
                 if(sy<31.81){
-                    terrainG.attachChild(fireEffect);
+                    ((Node) terrain.getChild("terrainG") ).attachChild(fireEffect);
                     vegList.add(new VegetationObject(o.getType(),pos, o.getRotation()));
                     PointLight lamp = new PointLight();
                     lamp.setPosition(fireEffect.getLocalTranslation());
@@ -265,21 +284,18 @@ public class Terrain {
                     //terrainG.addLight(lamp); 
                 }
             }
+            done.add(o);
+            if(System.nanoTime()>startTime+maxDelay) break;
         }
-        terrain.setName("Terrain_"+xOff+"_"+yOff);
-        terrain.attachChild(terrainG);
-        terrain.attachChild(terrainP);
-        System.out.println(terrain);
-        System.out.println(terrain.getChildren());
-        for(Spatial s : terrain.getChildren()) System.out.println(((Node) s).getChildren());
-         /** Save a Node to a .j3o file. */
-        String userHome = System.getProperty("user.home");
-        BinaryExporter exporter = BinaryExporter.getInstance();
-        File file = new File(userHome+"/debug/Terrain_"+xOff+"_"+yOff+".j3o");
-        try {
-        exporter.save(terrain, file);
-        } catch (IOException ex) {
- }
+        System.out.println(rawVegList.size()+" "+done.size()+" "+rawVegList.isEmpty());
+        rawVegList.removeAll(done);
+        done.removeAll(done);
+        return rawVegList.isEmpty();
+    }
+    
+    public Node getTerrainNode(){
+        terrain.setLocalTranslation(0, -130, 0);
+        terrain.move(0f, 94.2f, 0f);
         return terrain;
     }
 

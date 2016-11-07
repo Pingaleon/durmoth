@@ -42,7 +42,6 @@ public class TerrainLoaderAppState extends AbstractAppState{
     private Vector2int workingPos = null;
     private int centerX;
     private int centerY;
-    private int c = 0;
     
     
     
@@ -53,13 +52,16 @@ public class TerrainLoaderAppState extends AbstractAppState{
     private double x;
     private double y;
     
+    private Terrain terr;
+    
     private boolean found;
+    private boolean done = true;
     
     private List<Terrain> terrList = new ArrayList<Terrain>();
     
     ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
     
-    private Future<Node> future = null;
+    private Future<Terrain> future = null;
     
     @Override
     public void initialize(AppStateManager stateManager, Application app) {
@@ -97,9 +99,8 @@ public class TerrainLoaderAppState extends AbstractAppState{
           }catch(Exception e){
           }
           if(!found){
-            System.out.println(c+" load: "+v.toString());
+            System.out.println(" load: "+v.toString());
             toLoad.add(v);
-            c++;
           }
       }
       
@@ -112,8 +113,7 @@ public class TerrainLoaderAppState extends AbstractAppState{
           }
           if(!found){
             toUnload.add(v);
-            System.out.println(c+" unload: "+v.toString());
-            c++;
+            System.out.println(" unload: "+v.toString());
           }
       }
       
@@ -136,14 +136,34 @@ public class TerrainLoaderAppState extends AbstractAppState{
       if(future != null){
             //Get the waylist when its done
             if(future.isDone()){
-                try{
-                app.getRootNode().attachChild(future.get());
-                loadedChunks.add(workingPos);
-                workingPos = null;
-                }catch(Exception e){
-                    e.printStackTrace();
+                if(done){
+                    try{
+                        terr = future.get();
+                        terr.setAssetManager(app.terrAss);
+                        terr.terrainNodeSetup();
+                        if(terr.createVegetationStep(1000000)){
+                            app.getRootNode().attachChild(terr.getTerrainNode());
+                            loadedChunks.add(workingPos);
+                            workingPos = null;
+                            future = null;
+                            done = true;
+                        }else{
+                            done= false;
+                        }
+                     }catch(Exception e){
+                            e.printStackTrace();
+                     }
+                 }else{
+                    if(terr.createVegetationStep(1000000)){
+                            app.getRootNode().attachChild(terr.getTerrainNode());
+                            loadedChunks.add(workingPos);
+                            workingPos = null;
+                            future = null;
+                            done = true;
+                    }else{
+                        done = false;
+                    }
                 }
-                future = null;
             }
             else if(future.isCancelled()){
                 //Set future to null. Maybe we succeed next time...
@@ -213,15 +233,15 @@ public class TerrainLoaderAppState extends AbstractAppState{
       executor.shutdown();
     }
     
-    private Callable<Node> generate = new Callable<Node>(){
-    public Node call() throws Exception {
+    private Callable<Terrain> generate = new Callable<Terrain>(){
+    public Terrain call() throws Exception {
 
         Vector2int location = app.enqueue(new Callable<Vector2int>() {
             public Vector2int call() throws Exception {
                 return app.getStateManager().getState(TerrainLoaderAppState.class).workingPos.clone();
             }
         }).get();
-        TerrainAssets terrAss = app.enqueue(new Callable<TerrainAssets>() {
+        /*TerrainAssets terrAss = app.enqueue(new Callable<TerrainAssets>() {
             public TerrainAssets call() throws Exception {
                     return app.terrAss.clone();
             }
@@ -230,19 +250,15 @@ public class TerrainLoaderAppState extends AbstractAppState{
             public AssetManager call() throws Exception {
                     return app.getAssetManager();
             }
-        }).get();
+        }).get();*/
         long startTime = System.nanoTime();
-        Node terr = new Node();
-        Terrain t = new Terrain(128,location.x,location.y,1234,terrAss);
+        Terrain t = new Terrain(128,location.x,location.y,1234,null);
         t.generateHeightMap();
         t.generateAlphaMap();
         t.generateVegetation();
-        terr = t.getTerrainQuad();
-        terr.setLocalTranslation(0, -130, 0);
-        terr.move(0f, 94.2f, 0f);
         long estimatedTime = System.nanoTime() - startTime;
         System.out.println("Loading time: "+estimatedTime);
-        return terr;
+        return t;
     }
 };
      
